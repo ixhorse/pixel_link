@@ -10,7 +10,7 @@ def draw_bbox(image_data, line, color):
     points = [int(v) for v in data[0:8]]
     points = np.reshape(points, (4, 2))
     cnts = util.img.points_to_contours(points)
-    util.img.draw_contours(image_data, cnts, -1, color = color, border_width = 3)
+    util.img.draw_contours(image_data, cnts, -1, color = color, border_width = 1)
     
        
 def visualize(image_root, det_root, output_root, gt_root = None):
@@ -25,7 +25,7 @@ def visualize(image_root, det_root, output_root, gt_root = None):
     def read_image_file(image_name):
         return util.img.imread(util.io.join_path(image_root, image_name))
     
-    image_names = util.io.ls(image_root, '.jpg')
+    image_names = [x[4:-4]+'.jpg' for x in util.io.ls(det_root, '.txt')]
     for image_idx, image_name in enumerate(image_names):
         print '%d / %d: %s'%(image_idx + 1, len(image_names), image_name)
         image_data = read_image_file(image_name) # in BGR

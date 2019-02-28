@@ -44,10 +44,10 @@ tf.app.flags.DEFINE_float('moving_average_decay', 0.9999, 'The decay rate of Exp
 # I/O and preprocessing Flags.
 # =========================================================================== #
 tf.app.flags.DEFINE_integer(
-    'num_readers', 1,
+    'num_readers', 8,
     'The number of parallel readers that read data from the dataset.')
 tf.app.flags.DEFINE_integer(
-    'num_preprocessing_threads', 24,
+    'num_preprocessing_threads', 4,
     'The number of threads used to create the batches.')
 
 # =========================================================================== #

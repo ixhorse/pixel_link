@@ -347,23 +347,16 @@ def preprocess_for_train(image, labels, bboxes, xs, ys,
             image, bboxes, xs, ys = tf.cond(tf.less(rnd, config.rotation_prob), rotate, no_rotate)
     
         # expand image
-        if MAX_EXPAND_SCALE > 1:
-            rnd2 = tf.random_uniform((), minval = 0, maxval = 1)
+        if MAX_EXPAND_SCALE > 0:
             def expand():
-                scale = tf.random_uniform([], minval = 1.0, 
-                              maxval = MAX_EXPAND_SCALE, dtype=tf.float32)
                 image_shape = tf.cast(tf.shape(image), dtype = tf.float32)
                 image_h, image_w = image_shape[0], image_shape[1]
-                target_h = tf.cast(image_h * scale, dtype = tf.int32)
-                target_w = tf.cast(image_w * scale, dtype = tf.int32)
+                target = tf.cast(tf.maximum(image_h, image_w), dtype = tf.int32)
                 tf.logging.info('expanded')
                 return tf_image.resize_image_bboxes_with_crop_or_pad(
-                             image, bboxes, xs, ys, target_h, target_w)
- 
-            def no_expand():
-                return image, bboxes, xs, ys
+                             image, bboxes, xs, ys, target, target)
              
-            image, bboxes, xs, ys = tf.cond(tf.less(rnd2, config.expand_prob), expand, no_expand)
+            image, bboxes, xs, ys = expand()
 
         
         # Convert to float scaled [0, 1].
@@ -373,11 +366,11 @@ def preprocess_for_train(image, labels, bboxes, xs, ys,
 
         # Distort image and bounding boxes.
         dst_image = image
-        dst_image, labels, bboxes, xs, ys, distort_bbox = \
-            distorted_bounding_box_crop(image, labels, bboxes, xs, ys,
-                                        min_object_covered = MIN_OBJECT_COVERED,
-                                        aspect_ratio_range = CROP_ASPECT_RATIO_RANGE, 
-                                        area_range = AREA_RANGE)
+        # dst_image, labels, bboxes, xs, ys, distort_bbox = \
+        #     distorted_bounding_box_crop(image, labels, bboxes, xs, ys,
+        #                                 min_object_covered = MIN_OBJECT_COVERED,
+        #                                 aspect_ratio_range = CROP_ASPECT_RATIO_RANGE, 
+        #                                 area_range = AREA_RANGE)
         # Resize image to output size.
         dst_image = tf_image.resize_image(dst_image, out_shape,
                                           method=tf.image.ResizeMethod.BILINEAR,
@@ -429,6 +422,15 @@ def preprocess_for_eval(image, labels, bboxes, xs, ys,
     with tf.name_scope(scope):
         if image.get_shape().ndims != 3:
             raise ValueError('Input must be of size [height, width, C>0]')
+
+        # padding
+        image_shape = tf.cast(tf.shape(image), dtype = tf.int32)
+        image_h, image_w = image_shape[0], image_shape[1]
+        target = tf.cast(tf.maximum(image_h, image_w), dtype = tf.int32)
+        offset_pad_width = (target - image_w) // 2
+        offset_pad_height = (target - image_h) // 2
+        image = tf.image.pad_to_bounding_box(image, offset_pad_height, offset_pad_width,
+                                            target, target)
 
         image = tf.to_float(image)
         image = tf_image_whitened(image, [_R_MEAN, _G_MEAN, _B_MEAN])

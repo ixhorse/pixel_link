@@ -31,7 +31,7 @@ tf.app.flags.DEFINE_float('gpu_memory_fraction', -1,
 # I/O and preprocessing Flags.
 # =========================================================================== #
 tf.app.flags.DEFINE_integer(
-    'num_readers', 1,
+    'num_readers', 4,
     'The number of parallel readers that read data from the dataset.')
 tf.app.flags.DEFINE_integer(
     'num_preprocessing_threads', 4,
@@ -50,8 +50,8 @@ tf.app.flags.DEFINE_string('dataset_dir',
            util.io.get_absolute_path('~/dataset/ICDAR2015/Challenge4/ch4_test_images'), 
            'The directory where the dataset files are stored.')
 
-tf.app.flags.DEFINE_integer('eval_image_width', 1280, 'Train image size')
-tf.app.flags.DEFINE_integer('eval_image_height', 768, 'Train image size')
+tf.app.flags.DEFINE_integer('eval_image_width', 700, 'Train image size')
+tf.app.flags.DEFINE_integer('eval_image_height', 1000, 'Train image size')
 tf.app.flags.DEFINE_bool('using_moving_average', True, 
                          'Whether to use ExponentionalMovingAverage')
 tf.app.flags.DEFINE_float('moving_average_decay', 0.9999, 
@@ -106,7 +106,7 @@ def test():
                                                    data_format = config.data_format, 
                                                    is_training = False)
         b_image = tf.expand_dims(processed_image, axis = 0)
-        net = pixel_link_symbol.PixelLinkNet(b_image, is_training = True)
+        net = pixel_link_symbol.PixelLinkNet(b_image, is_training = False)
         global_step = slim.get_or_create_global_step()
 
     
@@ -137,8 +137,7 @@ def test():
     checkpoint = FLAGS.checkpoint_path
     checkpoint_name = util.io.get_filename(str(checkpoint));
     dump_path = util.io.join_path(logdir, checkpoint_name)
-    txt_path = util.io.join_path(dump_path,'txt')        
-    zip_path = util.io.join_path(dump_path, checkpoint_name + '_det.zip')
+    txt_path = util.io.join_path(dump_path,'test')      
     
     with tf.Session(config = sess_config) as sess:
         saver.restore(sess, checkpoint)
@@ -156,16 +155,7 @@ def test():
             print '%d/%d: %s'%(iter + 1, len(image_names), image_name)
             to_txt(txt_path,
                     image_name, image_data, 
-                    pixel_pos_scores, link_pos_scores)
-
-            
-    # create zip file for icdar2015
-    cmd = 'cd %s;zip -j %s %s/*'%(dump_path, zip_path, txt_path);
-    print cmd
-    util.cmd.cmd(cmd);
-    print "zip file created: ", util.io.join_path(dump_path, zip_path)
-
-         
+                    pixel_pos_scores, link_pos_scores)         
 
 def main(_):
     config_initialization()

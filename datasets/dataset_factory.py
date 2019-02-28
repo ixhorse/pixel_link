@@ -48,13 +48,22 @@ synthtext = DatasetConfig(
     }
 )
 
+datafountain = DatasetConfig(
+    file_pattern = 'datafountain_%s.tfrecord',
+#     file_pattern = 'SynthText_*.tfrecord',
+    split_sizes = {
+        'train': 50000
+    }
+)
+
 datasets_map = {
     'icdar2013':icdar2013,
     'icdar2015':icdar2015,
     'scut':scut,
     'td500':td500,
     'tr400':tr400,
-    'synthtext':synthtext
+    'synthtext':synthtext,
+    'datafountain':datafountain
 }
 
 

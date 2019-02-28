@@ -319,7 +319,7 @@ def rect_to_xys(rect, image_shape):
         return y
     
     rect = ((rect[0], rect[1]), (rect[2], rect[3]), rect[4])
-    points = cv2.cv.BoxPoints(rect)
+    points = cv2.boxPoints(rect)
     points = np.int0(points)
     for i_xy, (x, y) in enumerate(points):
         x = get_valid_x(x)
@@ -347,8 +347,12 @@ def mask_to_bboxes(mask, image_shape =  None, min_area = None,
         min_height = config.min_height
     bboxes = []
     max_bbox_idx = mask.max()
-    mask = util.img.resize(img = mask, size = (image_w, image_h), 
+    target = max(image_w, image_h)
+    mask = util.img.resize(img = mask, size = (target, target), 
                            interpolation = cv2.INTER_NEAREST)
+    diff_w = (target - image_w) // 2
+    diff_h = (target - image_h) // 2
+    mask = mask[diff_h:target-diff_h-1, diff_w:target-diff_w-1]
     
     for bbox_idx in xrange(1, max_bbox_idx + 1):
         bbox_mask = mask == bbox_idx

@@ -115,7 +115,8 @@ def test():
                     feed_dict = {image: image_data})
             h, w, _ =image_data.shape
             def resize(img):
-                return util.img.resize(img, size = (w, h), 
+                t = max(w, h)
+                return util.img.resize(img, size = (t, t), 
                                        interpolation = cv2.INTER_NEAREST)
             
             def get_bboxes(mask):
@@ -139,7 +140,7 @@ def test():
             draw_bboxes(image_data, bboxes_det, util.img.COLOR_RGB_RED)
 #             print util.sit(pixel_score)
 #             print util.sit(mask)
-            print util.sit(image_data)
+            print(util.sit(image_data))
                 
         
 def main(_):

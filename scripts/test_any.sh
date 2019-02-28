@@ -2,6 +2,7 @@ set -x
 set -e
 
 export CUDA_VISIBLE_DEVICES=$1
+export PYTHONPATH=/home/mcc/working/pixel_link/pylib/src:$PYTHONPATH
 
 python test_pixel_link_on_any_image.py \
             --checkpoint_path=$2 \
