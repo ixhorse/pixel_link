@@ -19,14 +19,14 @@ rgb_mean = [r_mean, g_mean, b_mean]
 # scale, crop, filtering and resize parameters
 use_rotation = False
 rotation_prob = 0.5
-max_expand_scale = 1
-expand_prob = 0
+max_expand_scale = 1.2
+expand_prob = 0.5
 min_object_covered = 0.1          # Minimum object to be cropped in random crop.
 bbox_crop_overlap = 0.2         # Minimum overlap to keep a bbox after cropping.
 crop_aspect_ratio_range = (0.5, 2.)  # Distortion ratio during cropping.
 area_range = [0.1, 1]
-flip = False
-using_shorter_side_filtering=False
+flip = True
+using_shorter_side_filtering=True
 min_shorter_side = 10
 max_shorter_side = np.infty
 #====================Pre-processing params END========================
@@ -70,7 +70,7 @@ bbox_border_width = 1
 pixel_cls_border_weight_lambda = 1.0
 pixel_cls_loss_weight_lambda = 2.0
 pixel_link_neg_loss_weight_lambda = 1.0
-pixel_link_loss_weight = 1.0
+pixel_link_loss_weight = 2.0
 #====================Training and model params END ==================
 #=====================================================================
 

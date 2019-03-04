@@ -27,7 +27,7 @@ tf.app.flags.DEFINE_float('gpu_memory_fraction', -1,
 tf.app.flags.DEFINE_integer('batch_size', None, 'The number of samples in each batch.')
 tf.app.flags.DEFINE_integer('num_gpus', 1, 'The number of gpus can be used.')
 tf.app.flags.DEFINE_integer('max_number_of_steps', 1000000, 'The maximum number of training steps.')
-tf.app.flags.DEFINE_integer('log_every_n_steps', 1, 'log frequency')
+tf.app.flags.DEFINE_integer('log_every_n_steps', 100, 'log frequency')
 tf.app.flags.DEFINE_bool("ignore_missing_vars", False, '')
 tf.app.flags.DEFINE_string('checkpoint_exclude_scopes', None, 'checkpoint_exclude_scopes')
 
@@ -272,7 +272,7 @@ def train(train_op):
             summary_op = summary_op,
             number_of_steps = FLAGS.max_number_of_steps,
             log_every_n_steps = FLAGS.log_every_n_steps,
-            save_summaries_secs = 30,
+            save_summaries_secs = 300,
             saver = saver,
             save_interval_secs = 1200,
             session_config = sess_config

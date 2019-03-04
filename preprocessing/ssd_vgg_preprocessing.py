@@ -327,7 +327,7 @@ def preprocess_for_train(image, labels, bboxes, xs, ys,
     Returns:
         A preprocessed image.
     """
-    fast_mode = False
+    fast_mode = True
     with tf.name_scope(scope, 'ssd_preprocessing_train', [image, labels, bboxes]):
         if image.get_shape().ndims != 3:
             raise ValueError('Input must be of size [height, width, C>0]')
@@ -345,18 +345,32 @@ def preprocess_for_train(image, labels, bboxes, xs, ys,
                 return image, bboxes, xs, ys
              
             image, bboxes, xs, ys = tf.cond(tf.less(rnd, config.rotation_prob), rotate, no_rotate)
+
+        # 
+        image_shape = tf.cast(tf.shape(image), dtype = tf.float32)
+        image_h, image_w = image_shape[0], image_shape[1]
+        target = tf.cast(tf.maximum(image_h, image_w), dtype = tf.int32)
+        image, bboxes, xs, ys = tf_image.resize_image_bboxes_with_crop_or_pad(
+                                image, bboxes, xs, ys, target, target)
     
         # expand image
-        if MAX_EXPAND_SCALE > 0:
+        if MAX_EXPAND_SCALE > 1:
+            rnd2 = tf.random_uniform((), minval = 0, maxval = 1)
             def expand():
+                scale = tf.random_uniform([], minval = 1.0, 
+                              maxval = MAX_EXPAND_SCALE, dtype=tf.float32)
                 image_shape = tf.cast(tf.shape(image), dtype = tf.float32)
                 image_h, image_w = image_shape[0], image_shape[1]
-                target = tf.cast(tf.maximum(image_h, image_w), dtype = tf.int32)
+                target_h = tf.cast(image_h * scale, dtype = tf.int32)
+                target_w = tf.cast(image_w * scale, dtype = tf.int32)
                 tf.logging.info('expanded')
                 return tf_image.resize_image_bboxes_with_crop_or_pad(
-                             image, bboxes, xs, ys, target, target)
+                             image, bboxes, xs, ys, target_h, target_w)
+ 
+            def no_expand():
+                return image, bboxes, xs, ys
              
-            image, bboxes, xs, ys = expand()
+            image, bboxes, xs, ys = tf.cond(tf.less(rnd2, config.expand_prob), expand, no_expand)
 
         
         # Convert to float scaled [0, 1].
